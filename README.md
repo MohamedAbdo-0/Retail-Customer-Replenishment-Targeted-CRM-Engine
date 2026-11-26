@@ -174,7 +174,7 @@ An enterprise-ready, zero-dependency executive interface designed for non-techni
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/retail-replenishment-ml.git
+git clone https://github.com/MohamedAbdo-0/Retail-Customer-Replenishment-Targeted-CRM-Engine.git
 cd retail-replenishment-ml
 ```
 
