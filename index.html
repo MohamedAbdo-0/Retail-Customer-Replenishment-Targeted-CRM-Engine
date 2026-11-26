@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Banana Priority Dashboard</title>
+<style>
+:root{
+  --bg:#F1F4EF;--surface:#FAFBF8;--line:#D3DBD2;--ink:#12261E;--muted:#586A60;--accent:#1D6B47;--accent-ink:#FFFFFF;
+  --b1:#8A4B00;--b1t:#FFFFFF;--b2:#C27803;--b2t:#261600;--b3:#F2B84B;--b3t:#261600;--b4:#E8D9AE;--b4t:#261600;--b4s:#B59A55;
+  --rule-bar:#AEBBB1;--tip:#12261E;--tip-ink:#F1F4EF;--focus:#1D6B47;color-scheme:light
+}
+:root[data-theme="dark"]{
+  --bg:#0D1914;--surface:#12211B;--line:#26392F;--ink:#E8F0EA;--muted:#97AA9F;--accent:#5FD39A;--accent-ink:#06150E;
+  --b1:#FFCB5C;--b1t:#241600;--b2:#D9A23F;--b2t:#241600;--b3:#8F6B2A;--b3t:#FFFFFF;--b4:#4A3F25;--b4t:#F3E6C4;--b4s:#7A6A44;
+  --rule-bar:#3C5146;--tip:#E8F0EA;--tip-ink:#0D1914;--focus:#5FD39A;color-scheme:dark
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){
+    --bg:#0D1914;--surface:#12211B;--line:#26392F;--ink:#E8F0EA;--muted:#97AA9F;--accent:#5FD39A;--accent-ink:#06150E;
+    --b1:#FFCB5C;--b1t:#241600;--b2:#D9A23F;--b2t:#241600;--b3:#8F6B2A;--b3t:#FFFFFF;--b4:#4A3F25;--b4t:#F3E6C4;--b4s:#7A6A44;
+    --rule-bar:#3C5146;--tip:#E8F0EA;--tip-ink:#0D1914;--focus:#5FD39A;color-scheme:dark
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+h1,h2,h3,.serif{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;font-weight:600;letter-spacing:-.01em;margin:0}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--accent);color:var(--accent-ink);padding:8px 12px;z-index:50}
+.skip:focus{left:8px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.top{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20}
+.top .row{display:flex;align-items:center;gap:28px;min-height:64px;flex-wrap:wrap}
+.mark{display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
+.mark-name{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.mark-sub{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:21px 12px 18px;cursor:pointer;color:var(--muted);font-weight:500}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tools{display:flex;gap:6px}
+.text-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;font-size:13px}
+.text-btn:hover{border-color:var(--accent)}
+main.wrap{padding-bottom:64px}
+.view{display:none;padding-top:44px}
+.view.active{display:block}
+.hero{max-width:780px}
+.hero h1{font-size:clamp(30px,4.6vw,48px);line-height:1.1}
+.lead{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:19px;line-height:1.6;margin-top:18px;max-width:680px}
+.status{margin-top:14px;font-size:13px;color:var(--muted)}
+.status b{color:var(--ink);font-weight:600}
+figure{margin:0}
+.hero-chart{margin-top:40px;border-top:1px solid var(--line);padding-top:14px}
+figcaption{font-size:13px;color:var(--muted);margin-bottom:6px}
+.figures{display:grid;grid-template-columns:repeat(4,1fr);margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.figures>div{display:flex;flex-direction:column;justify-content:flex-start;padding:20px 20px 20px 0;gap:8px}
+.figures>div+div{padding-left:20px;border-left:1px solid var(--line)}
+.figures dd{margin:0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:40px;line-height:1;font-weight:600;font-variant-numeric:lining-nums tabular-nums}
+.figures dt{font-size:13px;color:var(--muted);max-width:210px}
+.split{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;margin-top:48px}
+.split h2,.sec-h{font-size:24px;margin-bottom:6px}
+.sub{color:var(--muted);max-width:640px}
+.comp{margin-top:18px;display:flex;flex-direction:column}
+.comp-row{display:grid;grid-template-columns:14px 78px 1fr 44px 40px;align-items:center;gap:12px;background:none;border:0;border-top:1px solid var(--line);padding:13px 0;cursor:pointer;text-align:left}
+.comp-row:last-child{border-bottom:1px solid var(--line)}
+.comp-row:hover .cn{text-decoration:underline}
+.sw{width:14px;height:14px;border-radius:3px}
+.bg1{background:var(--b1)}.bg2{background:var(--b2)}.bg3{background:var(--b3)}.bg4{background:var(--b4);box-shadow:inset 0 0 0 1px var(--b4s)}
+.cbar{height:10px;background:transparent;display:block}
+.cbar i{display:block;height:100%;border-radius:2px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.cv{text-align:right;font-weight:600}.cp{text-align:right;color:var(--muted);font-size:13px}
+.sim{margin-top:18px}
+.sim label{display:flex;justify-content:space-between;font-weight:600;margin-bottom:8px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0 0 4px}
+.ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.sim-text{margin-top:16px;font-size:16px;max-width:560px}
+.sim-text b{font-weight:700}
+.meter{margin-top:16px;display:grid;gap:12px}
+.meter div{display:grid;grid-template-columns:150px 1fr 52px;gap:12px;align-items:center;font-size:13px}
+.meter .track{height:12px;background:var(--line);border-radius:2px;overflow:hidden}
+.meter .track i{display:block;height:100%;background:var(--accent);transition:width .35s cubic-bezier(.2,.8,.2,1)}
+.meter .track i.alt{background:var(--rule-bar)}
+.meter span:last-child{text-align:right;font-weight:600}
+.fine{font-size:12.5px;color:var(--muted);margin-top:14px;max-width:560px}
+.empty{border:1px dashed var(--line);padding:36px 28px;margin-top:24px;max-width:640px}
+.empty h3{font-size:20px;margin-bottom:6px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 16px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn:disabled{opacity:.45;cursor:default}
+.empty .btn{margin-top:16px}
+.needs-data{display:block}.data-only{display:none}
+body.has-data .needs-data{display:none}
+body.has-data .data-only{display:block}
+.search{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:24px}
+.search label,.filters label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+input[type=text],input:not([type]),select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 12px;min-width:200px;color:var(--ink)}
+input:focus,select:focus{border-color:var(--accent)}
+.suggest{margin-top:12px;font-size:13px;color:var(--muted)}
+.suggest button{background:none;border:0;color:var(--accent);cursor:pointer;padding:0 6px 0 0;font-weight:600;text-decoration:underline}
+.idle{margin-top:32px;color:var(--muted);max-width:560px}
+.result{margin-top:32px;border-top:1px solid var(--line);padding-top:24px}
+.res-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.res-head h3{font-size:30px}
+.chip{display:inline-block;border-radius:99px;padding:3px 12px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.chip.b1{background:var(--b1);color:var(--b1t)}.chip.b2{background:var(--b2);color:var(--b2t)}.chip.b3{background:var(--b3);color:var(--b3t)}.chip.b4{background:var(--b4);color:var(--b4t);box-shadow:inset 0 0 0 1px var(--b4s)}
+.res-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;margin-top:20px}
+.big{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:76px;line-height:1;font-weight:600;font-variant-numeric:lining-nums tabular-nums}
+.big-cap{margin-top:12px;max-width:430px;color:var(--muted)}
+.strip{position:relative;display:flex;gap:2px;margin-top:30px;height:16px}
+.strip i{flex:1;display:block;border-radius:2px}
+.strip i.bg4{box-shadow:inset 0 0 0 1px var(--b4s)}
+.marker{position:absolute;top:-9px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid var(--ink);transform:translateX(-50%);transition:left .7s cubic-bezier(.2,.8,.2,1)}
+.strip-cap{font-size:13px;color:var(--muted);margin-top:8px}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-content:start}
+.facts div{border-top:1px solid var(--line);padding:14px 0}
+.facts dt{font-size:13px;color:var(--muted)}
+.facts dd{margin:2px 0 0;font-size:22px;font-weight:600}
+.result .chart-box{margin-top:28px;max-width:720px}
+.filters{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-top:24px}
+.filters .grow{flex:1;min-width:160px}
+.filters .grow input{width:100%}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:6px 14px;cursor:pointer;font-size:13.5px}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.count{margin:18px 0 8px;font-size:13px;color:var(--muted)}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--ink)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th{font-weight:600;text-align:left;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding:0}
+th button{background:none;border:0;cursor:pointer;padding:12px 12px 12px 0;font-weight:600;font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;width:100%;text-align:left}
+th button:hover{color:var(--ink)}
+th[aria-sort="ascending"] button:after{content:"\2191"}
+th[aria-sort="descending"] button:after{content:"\2193"}
+th[aria-sort] button{color:var(--ink)}
+td{border-bottom:1px solid var(--line);padding:10px 12px 10px 0;white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+td.num{text-align:left}
+.hit{display:flex;align-items:center;gap:10px}
+.hitbar{width:90px;height:8px;background:var(--line);border-radius:2px;overflow:hidden;display:inline-block}
+.hitbar i{display:block;height:100%;background:var(--accent)}
+.pager{display:flex;gap:14px;align-items:center;margin-top:16px;font-size:13px;color:var(--muted)}
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:36px}
+.model-grid section{min-width:0}
+.model-grid h2{font-size:22px;margin-bottom:4px}
+.topk{display:grid;grid-template-columns:repeat(3,1fr);margin-top:32px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.topk div{padding:18px 18px 18px 0}
+.topk div+div{padding-left:18px;border-left:1px solid var(--line)}
+.topk b{display:block;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:34px;font-weight:600;line-height:1.1}
+.topk span{font-size:13px;color:var(--muted)}
+.mtable{width:100%;min-width:0;margin-top:14px;font-size:13.5px}
+.mtable th,.mtable td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line)}
+.prose{max-width:720px;margin-top:36px}
+.prose h2{font-size:22px;margin-bottom:10px}
+.prose ul{margin:0;padding-left:20px;display:grid;gap:8px}
+.prose p+p{margin-top:10px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:inherit}
+.grid{stroke:var(--line);stroke-width:1}
+.axis0{stroke:var(--ink);stroke-width:1;opacity:.5}
+.ax{fill:var(--muted);font-size:12px}
+.val{fill:var(--ink);font-size:12.5px;font-weight:600;paint-order:stroke;stroke:var(--bg);stroke-width:5px;stroke-linejoin:round}
+.cap{fill:var(--ink);font-size:12.5px;font-weight:600}
+svg.sm .ax,svg.sm .val,svg.sm .cap{font-size:15.5px}
+.avgline{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:5 4;opacity:.7}
+.bracket{stroke:var(--muted);stroke-width:1.5}
+.bar{cursor:default;transform-box:fill-box;transform-origin:50% 100%}
+.bar.f1{fill:var(--b1)}.bar.f2{fill:var(--b2)}.bar.f3{fill:var(--b3)}.bar.f4{fill:var(--b4);stroke:var(--b4s);stroke-width:1}
+.bar.dim{opacity:.3}
+.bar.hl{stroke:var(--ink);stroke-width:2}
+.bar[role=button]{cursor:pointer}
+.bar:hover{filter:brightness(1.08)}
+.anim .bar{animation:grow .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.hbar{transform-box:fill-box;transform-origin:0 50%}
+.anim .hbar{animation:growx .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes growx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.cbar-pos{fill:var(--accent)}
+.cbar-neg{fill:none;stroke:var(--accent);stroke-width:2}
+.cb{transform-box:fill-box}
+.cb.p{transform-origin:0 50%}.cb.n{transform-origin:100% 50%}
+.anim .cb{animation:growx .8s cubic-bezier(.2,.8,.2,1) both}
+#tip{position:fixed;z-index:60;background:var(--tip);color:var(--tip-ink);padding:8px 11px;border-radius:5px;font-size:13px;line-height:1.4;max-width:260px;pointer-events:none;opacity:0;transition:opacity .12s}
+#tip.on{opacity:1}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:6px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;max-width:90vw}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 88%,transparent);display:none;align-items:center;justify-content:center;z-index:80;border:3px dashed var(--accent);margin:12px}
+#drop.on{display:flex}
+#drop p{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:28px}
+.foot{border-top:1px solid var(--line);padding-top:20px;padding-bottom:40px;font-size:13px;color:var(--muted)}
+@media (max-width:900px){
+  .wrap{padding:0 16px}
+  .top .row{gap:8px}
+  .tabs button{padding:12px 8px 10px;font-size:14px}
+  .figures{grid-template-columns:1fr 1fr}
+  .figures>div:nth-child(3){padding-left:0;border-left:0;border-top:1px solid var(--line)}
+  .figures>div:nth-child(4){border-top:1px solid var(--line)}
+  .split,.model-grid,.res-grid{grid-template-columns:1fr;gap:40px}
+  .big{font-size:60px}
+  .meter div{grid-template-columns:1fr 1fr 48px}
+  .topk{grid-template-columns:1fr}
+  .topk div+div{padding-left:0;border-left:0;border-top:1px solid var(--line)}
+}
+@media (max-width:600px){
+  svg .ax,svg .val,svg .cap,svg.sm .ax,svg.sm .val,svg.sm .cap{font-size:21px}
+  .wrap{overflow-x:clip}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap row">
+    <div class="mark"><span class="mark-name">Banana priority list</span><span class="mark-sub">Dunnhumby Complete Journey</span></div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button role="tab" data-view="overview" aria-selected="true">Overview</button>
+      <button role="tab" data-view="lookup" aria-selected="false">Household lookup</button>
+      <button role="tab" data-view="list" aria-selected="false">Priority list</button>
+      <button role="tab" data-view="model" aria-selected="false">Model and limits</button>
+    </nav>
+    <div class="tools">
+      <button class="text-btn" id="loadBtn" type="button">Load data</button>
+      <button class="text-btn" id="themeBtn" type="button">Dark theme</button>
+    </div>
+  </div>
+</header>
+<input type="file" id="file" accept=".csv,text/csv" hidden>
+<main id="main" class="wrap">
+
+  <section class="view active" id="view-overview" role="tabpanel">
+    <div class="hero">
+      <h1>Which households will buy bananas in the next 28 days?</h1>
+      <p class="lead" id="lead"></p>
+      <p class="status" id="status"></p>
+    </div>
+    <figure class="hero-chart">
+      <figcaption>Share of households that bought bananas within 28 days, by priority decile, validation backtest</figcaption>
+      <div id="decileHero"></div>
+    </figure>
+    <dl class="figures">
+      <div><dd id="kpi-total">0</dd><dt>households on the list, active in the last 28 days of the data</dt></div>
+      <div><dd id="kpi-top">0%</dd><dt>of the top decile bought bananas within 28 days</dt></div>
+      <div><dd id="kpi-lift">0</dd><dt>top decile compared with the list average</dt></div>
+      <div><dd id="kpi-auc">0</dd><dt>PR-AUC of the model, against 0.650 for the best simple rule</dt></div>
+    </dl>
+    <div class="split">
+      <section>
+        <h2>Who is on the list</h2>
+        <p class="sub">Select a band to open it in the priority list.</p>
+        <div class="comp" id="comp"></div>
+      </section>
+      <section>
+        <h2>What a campaign would reach</h2>
+        <p class="sub">Choose how many deciles to contact, starting from the highest priority.</p>
+        <div class="sim">
+          <label for="simRange"><span>Deciles contacted</span><span id="simVal">3</span></label>
+          <input type="range" id="simRange" min="1" max="10" value="3">
+          <div class="ticks"><span>Top decile only</span><span>Whole list</span></div>
+          <p class="sim-text" id="simText"></p>
+          <div class="meter" id="simMeter"></div>
+          <p class="fine">Estimates use the validation hit rate of each decile. They describe groups, not individual households.</p>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="view" id="view-lookup" role="tabpanel">
+    <h2 class="sec-h" style="font-size:34px">Look up a household</h2>
+    <p class="sub">Enter a household ID from the priority list, for example HH-1532.</p>
+    <div class="needs-data empty">
+      <h3>No household data loaded</h3>
+      <p class="sub">Choose dashboard_list.csv, or drop it anywhere on this page. The file stays in your browser.</p>
+      <button class="btn primary" type="button" data-load>Choose file</button>
+    </div>
+    <div class="data-only">
+      <form class="search" id="lookupForm" autocomplete="off">
+        <label>Household ID<input id="lookupInput" list="idlist" placeholder="HH-0000" spellcheck="false"></label>
+        <button class="btn primary" type="submit">Look up</button>
+        <button class="btn" type="button" id="randomBtn">Pick a random household</button>
+      </form>
+      <p class="suggest" id="suggest"></p>
+      <div id="lookupOut" aria-live="polite"></div>
+    </div>
+    <datalist id="idlist"></datalist>
+  </section>
+
+  <section class="view" id="view-list" role="tabpanel">
+    <h2 class="sec-h" style="font-size:34px">Priority list</h2>
+    <p class="sub">Every household on the list, ranked by model score. Select a row to open the household.</p>
+    <div class="needs-data empty">
+      <h3>No household data loaded</h3>
+      <p class="sub">Choose dashboard_list.csv, or drop it anywhere on this page. The file stays in your browser.</p>
+      <button class="btn primary" type="button" data-load>Choose file</button>
+    </div>
+    <div class="data-only">
+      <div class="filters">
+        <div class="chips" id="bandChips" role="group" aria-label="Priority band"></div>
+        <label>Decile<select id="decileSel"></select></label>
+        <label class="grow">Search by ID<input id="listSearch" placeholder="HH-" spellcheck="false"></label>
+        <button class="btn" type="button" id="exportBtn">Export filtered list</button>
+      </div>
+      <p class="count" id="listCount"></p>
+      <div class="tablewrap">
+        <table id="tbl">
+          <thead><tr>
+            <th data-sort="rank"><button type="button">Rank</button></th>
+            <th data-sort="id"><button type="button">Household</button></th>
+            <th data-sort="band"><button type="button">Priority</button></th>
+            <th data-sort="decile"><button type="button">Decile</button></th>
+            <th data-sort="hit"><button type="button">Hit rate</button></th>
+            <th data-sort="days"><button type="button">Days since banana</button></th>
+            <th data-sort="hist"><button type="button">Banana days</button></th>
+            <th data-sort="prev"><button type="button">Bought last 28 days</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button class="btn" type="button" id="prevBtn">Previous</button>
+        <span id="pageInfo"></span>
+        <button class="btn" type="button" id="nextBtn">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-model" role="tabpanel">
+    <h2 class="sec-h" style="font-size:34px">Model and limits</h2>
+    <p class="sub">A logistic regression trained on household history up to a reference day, scored against the 28 days that follow.</p>
+    <div class="topk" id="topk"></div>
+    <div class="model-grid">
+      <section>
+        <h2>Against simple rules</h2>
+        <p class="sub">PR-AUC, mean of three rolling time folds. Whiskers show the lowest and highest fold.</p>
+        <div id="cmpChart"></div>
+        <table class="mtable" id="foldTable"></table>
+      </section>
+      <section>
+        <h2>What the model leans on</h2>
+        <p class="sub">Standardized coefficients. Solid bars raise the score, outlined bars lower it.</p>
+        <div id="coefChart"></div>
+      </section>
+    </div>
+    <div class="prose">
+      <h2>How the forecast is built</h2>
+      <p>The label is 1 when a household bought banana product 1082185 with a positive quantity in the 28 days after a reference day. Features use only days up to the reference day. Training, validation and test periods are separated in time with a 28-day gap, so no future days leak into training.</p>
+    </div>
+    <div class="prose">
+      <h2>Read the list with these limits in mind</h2>
+      <ul>
+        <li>The forecast covers the 28 days after the last day in the data. That period has no data, so it cannot be checked. The backtest is the evidence.</li>
+        <li>Hit rates belong to deciles. A household in the top decile is in a group that bought bananas often, which is not the same as a personal probability.</li>
+        <li>The model relies heavily on each household's banana history, and the same households appear in training and testing. It says little about households with no history.</li>
+        <li>The test period was viewed once before the purchase definition changed to require a positive quantity. Model choices were made on validation and the rolling folds.</li>
+        <li>The data covers about two years of one retailer. It describes patterns in that period, not causes and not today's market.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<footer class="wrap foot">This page runs in your browser. Loaded files are not uploaded anywhere. Household IDs are pseudonyms.</footer>
+<div id="tip" role="tooltip"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="drop"><p>Drop dashboard_list.csv to load it</p></div>
+<script>
+(function(){
+var REDUCED=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+var BANDS=['Very high','High','Medium','Low'];
+var E={
+  dcounts:[201,201,201,201,202,201,201,201,201,202],
+  deciles:[92.8,71.1,53.8,38.5,29.0,19.5,14.2,10.3,8.1,4.7],
+  models:[
+    {n:'Logistic regression',m:0.7654,lo:0.7516,hi:0.7785,key:1},
+    {n:'Rule: days since last banana',m:0.6498,lo:0.6382,hi:0.6660},
+    {n:'Rule: bought in previous 28 days',m:0.5311,lo:0.5170,hi:0.5492},
+    {n:'Baseline: purchase rate',m:0.339}
+  ],
+  folds:[['Logistic regression',[0.7516,0.7785,0.7661]],['Rule: days since last banana',[0.6382,0.6660,0.6451]],['Rule: bought in previous 28 days',[0.5170,0.5492,0.5271]]],
+  coefs:[['banana_days_before',0.7031],['banana_days_12w',0.5517],['banana_days_4w',0.3075],['banana_days_8w',0.2803],['baskets_4w',0.2111],['tenure_days',-0.2093],['baskets_8w',-0.1537],['days_since_last_purchase',-0.1448],['spend_8w',0.1308],['avg_basket_value_8w',0.1156],['days_since_last_banana',0.0430],['spend_trend',-0.0164],['spend_4w',-0.0037]],
+  topk:[{k:10,p:90.8,l:2.68},{k:20,p:81.4,l:2.40},{k:30,p:72.0,l:2.12}]
+};
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function fmtInt(n){return Math.round(n).toLocaleString('en-US')}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function bandOf(d){return d===1?0:d<=3?1:d<=6?2:3}
+
+var rows=null,index=new Map(),byRank=[],deciles=E.deciles.slice(),dcounts=E.dcounts.slice();
+var seen={},view='overview',current=null;
+var F={band:null,decile:null,q:'',sort:'rank',dir:1,page:0};
+var PAGE=25;
+
+function tot(){return dcounts.reduce(function(a,b){return a+b},0)}
+function avgRate(){var s=0;for(var i=0;i<deciles.length;i++)s+=dcounts[i]*deciles[i];return s/(tot()||1)}
+function bandCounts(){var c=[0,0,0,0];for(var i=0;i<dcounts.length;i++)c[bandOf(i+1)]+=dcounts[i];return c}
+
+function countUp(el,to,fmt,dur){
+  if(REDUCED||!dur){el.textContent=fmt(to);return}
+  var t0=performance.now();
+  function step(t){var p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(to*e);if(p<1)requestAnimationFrame(step);else el.textContent=fmt(to)}
+  requestAnimationFrame(step);
+}
+
+var tip=$('#tip');
+function showTip(html,x,y){
+  tip.innerHTML=html;tip.classList.add('on');
+  var w=tip.offsetWidth,h=tip.offsetHeight,nx=x+14,ny=y-h-12;
+  if(nx+w>window.innerWidth-8)nx=x-w-14;
+  if(ny<8)ny=y+18;
+  tip.style.left=nx+'px';tip.style.top=ny+'px';
+}
+function hideTip(){tip.classList.remove('on')}
+var toastTimer=null;
+function toast(msg){
+  var t=$('#toast');t.textContent=msg;t.classList.add('on');
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('on')},3600);
+}
+
+function decileChart(host,o){
+  o=o||{};
+  var W=720,H=o.compact?230:340,m={t:28,r:16,b:o.compact?30:64,l:44};
+  var iw=W-m.l-m.r,ih=H-m.t-m.b,n=deciles.length,st=iw/n,bw=st*0.74,avg=avgRate();
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="group" aria-label="Purchase rate by priority decile"'+(o.animate?' class="anim"':'')+'>';
+  [0,25,50,75,100].forEach(function(v){
+    var y=m.t+ih*(1-v/100);
+    s+='<line class="grid" x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y+'" y2="'+y+'"/><text class="ax" x="'+(m.l-8)+'" y="'+(y+4)+'" text-anchor="end">'+v+'%</text>';
+  });
+  for(var i=0;i<n;i++){
+    var x=m.l+i*st+(st-bw)/2,h=Math.max(1,ih*deciles[i]/100),y=m.t+ih-h,b=bandOf(i+1);
+    var cls='bar f'+(b+1)+(o.highlight&&o.highlight!==i+1?' dim':'')+(o.highlight===i+1?' hl':'');
+    s+='<rect class="'+cls+'" data-d="'+(i+1)+'" style="animation-delay:'+(i*55)+'ms" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="3" tabindex="0" role="'+(o.onClick?'button':'img')+'" aria-label="Decile '+(i+1)+', '+deciles[i].toFixed(1)+' percent"/>';
+    s+='<text class="val" x="'+(x+bw/2).toFixed(1)+'" y="'+(y-7).toFixed(1)+'" text-anchor="middle">'+deciles[i].toFixed(1)+'%</text>';
+    s+='<text class="ax" x="'+(x+bw/2).toFixed(1)+'" y="'+(m.t+ih+17)+'" text-anchor="middle">'+(i+1)+'</text>';
+  }
+  var ay=m.t+ih*(1-avg/100);
+  s+='<line class="avgline" x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+ay+'" y2="'+ay+'"/><text class="cap" x="'+(W-m.r)+'" y="'+(ay-7)+'" text-anchor="end">List average '+avg.toFixed(1)+'%</text>';
+  if(!o.compact){
+    [[1,1,0],[2,3,1],[4,6,2],[7,10,3]].forEach(function(g){
+      var x0=m.l+(g[0]-1)*st+5,x1=m.l+g[1]*st-5,by=m.t+ih+34;
+      s+='<line class="bracket" x1="'+x0+'" x2="'+x1+'" y1="'+by+'" y2="'+by+'"/><text class="cap" x="'+((x0+x1)/2)+'" y="'+(by+17)+'" text-anchor="middle">'+BANDS[g[2]]+'</text>';
+    });
+  }
+  s+='</svg>';
+  host.innerHTML=s;
+  $$('.bar',host).forEach(function(el){
+    var d=+el.getAttribute('data-d');
+    var html='<b>Decile '+d+', '+BANDS[bandOf(d)]+'</b><br>'+deciles[d-1].toFixed(1)+'% bought bananas within 28 days<br>'+fmtInt(dcounts[d-1])+' households'+(o.onClick?'<br>Select to open the list':'');
+    el.addEventListener('mousemove',function(e){showTip(html,e.clientX,e.clientY)});
+    el.addEventListener('mouseleave',hideTip);
+    el.addEventListener('focus',function(){var r=el.getBoundingClientRect();showTip(html,r.left+r.width/2,r.top)});
+    el.addEventListener('blur',hideTip);
+    if(o.onClick){
+      el.addEventListener('click',function(){hideTip();o.onClick(d)});
+      el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();hideTip();o.onClick(d)}});
+    }
+  });
+}
+
+function compareChart(host,animate){
+  var W=720,rowH=58,m={t:16,r:64,b:34,l:262},iw=W-m.l-m.r,H=m.t+rowH*E.models.length+m.b;
+  function x(v){return m.l+iw*v}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="PR-AUC by model" class="sm'+(animate?' anim':'')+'">';
+  [0,0.25,0.5,0.75,1].forEach(function(v){
+    s+='<line class="grid" x1="'+x(v)+'" x2="'+x(v)+'" y1="'+m.t+'" y2="'+(H-m.b)+'"/><text class="ax" x="'+x(v)+'" y="'+(H-m.b+18)+'" text-anchor="middle">'+v.toFixed(2)+'</text>';
+  });
+  E.models.forEach(function(md,i){
+    var y=m.t+i*rowH+10,fill=md.key?'var(--accent)':(md.lo==null?'none':'var(--rule-bar)');
+    var stroke=md.lo==null?' stroke="var(--rule-bar)" stroke-width="2"':'';
+    s+='<text class="'+(md.key?'cap':'ax')+'" x="'+(m.l-12)+'" y="'+(y+19)+'" text-anchor="end" style="'+(md.key?'':'fill:var(--ink)')+'">'+esc(md.n)+'</text>';
+    s+='<rect class="hbar" x="'+m.l+'" y="'+y+'" width="'+(iw*md.m).toFixed(1)+'" height="28" rx="3" fill="'+fill+'"'+stroke+'/>';
+    var endx=x(md.hi!=null?md.hi:md.m);
+    if(md.lo!=null){
+      s+='<line x1="'+x(md.lo)+'" x2="'+x(md.hi)+'" y1="'+(y+14)+'" y2="'+(y+14)+'" stroke="var(--ink)" stroke-width="2"/><line x1="'+x(md.lo)+'" x2="'+x(md.lo)+'" y1="'+(y+8)+'" y2="'+(y+20)+'" stroke="var(--ink)" stroke-width="2"/><line x1="'+x(md.hi)+'" x2="'+x(md.hi)+'" y1="'+(y+8)+'" y2="'+(y+20)+'" stroke="var(--ink)" stroke-width="2"/>';
+    }
+    s+='<text class="val" x="'+(endx+10)+'" y="'+(y+19)+'">'+md.m.toFixed(3)+'</text>';
+  });
+  s+='</svg>';
+  host.innerHTML=s;
+}
+
+function coefChart(host,animate){
+  var W=720,rowH=30,m={t:12,r:60,b:30,l:200},iw=W-m.l-m.r,H=m.t+rowH*E.coefs.length+m.b,lo=-0.45,hi=0.85;
+  function x(v){return m.l+iw*(v-lo)/(hi-lo)}
+  var z=x(0);
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Standardized model coefficients" class="sm'+(animate?' anim':'')+'">';
+  [-0.4,-0.2,0,0.2,0.4,0.6,0.8].forEach(function(v){
+    s+='<line class="'+(v===0?'axis0':'grid')+'" x1="'+x(v)+'" x2="'+x(v)+'" y1="'+m.t+'" y2="'+(H-m.b)+'"/><text class="ax" x="'+x(v)+'" y="'+(H-m.b+18)+'" text-anchor="middle">'+v.toFixed(1)+'</text>';
+  });
+  E.coefs.forEach(function(c,i){
+    var y=m.t+i*rowH+5,v=c[1],pos=v>=0,bx=pos?z:x(v),bw=Math.max(1,Math.abs(x(v)-z));
+    s+='<text class="ax" x="'+(m.l-12)+'" y="'+(y+14)+'" text-anchor="end" style="fill:var(--ink)">'+esc(c[0].replace(/_/g,' '))+'</text>';
+    s+='<rect class="cb '+(pos?'p cbar-pos':'n cbar-neg')+'" x="'+bx.toFixed(1)+'" y="'+y+'" width="'+bw.toFixed(1)+'" height="20" rx="2"/>';
+    s+='<text class="val" x="'+(pos?x(v)+7:x(v)-7)+'" y="'+(y+15)+'" text-anchor="'+(pos?'start':'end')+'">'+(pos?'+':'')+v.toFixed(2)+'</text>';
+  });
+  s+='</svg>';
+  host.innerHTML=s;
+}
+
+function renderOverview(anim){
+  var top=deciles[0],avg=avgRate(),lift=top/(avg||1);
+  $('#lead').textContent='A model ranks every household that was active in the last 28 days of the data. In the validation backtest, the top tenth of the ranking bought bananas within 28 days '+top.toFixed(1)+'% of the time, against '+avg.toFixed(1)+'% across the whole list.';
+  setStatus();
+  decileChart($('#decileHero'),{animate:anim,onClick:function(d){F.decile=d;F.band=null;F.q='';F.page=0;if(!rows){toast('Load dashboard_list.csv to browse households');show('list');return}show('list')}});
+  var d=anim?900:0;
+  countUp($('#kpi-total'),tot(),function(v){return fmtInt(v)},d);
+  countUp($('#kpi-top'),top,function(v){return v.toFixed(1)+'%'},d);
+  countUp($('#kpi-lift'),lift,function(v){return v.toFixed(1)+'×'},d);
+  countUp($('#kpi-auc'),E.models[0].m,function(v){return v.toFixed(3)},d);
+  renderComp(anim);
+  renderSim();
+}
+
+function renderComp(anim){
+  var bc=bandCounts(),t=tot()||1,h='',mx=Math.max.apply(null,bc)||1;
+  bc.forEach(function(c,i){
+    var p=c/mx*100,share=c/t*100;
+    h+='<button type="button" class="comp-row" data-b="'+i+'"><span class="sw bg'+(i+1)+'"></span><span class="cn">'+BANDS[i]+'</span><span class="cbar"><i class="bg'+(i+1)+'" style="width:'+(anim?0:p)+'%" data-w="'+p+'"></i></span><span class="cv">'+fmtInt(c)+'</span><span class="cp">'+share.toFixed(0)+'%</span></button>';
+  });
+  var host=$('#comp');host.innerHTML=h;
+  if(anim){requestAnimationFrame(function(){requestAnimationFrame(function(){$$('.cbar i',host).forEach(function(el){el.style.width=el.getAttribute('data-w')+'%'})})})}
+  $$('.comp-row',host).forEach(function(b){b.addEventListener('click',function(){F.band=+b.getAttribute('data-b');F.decile=null;F.q='';F.page=0;show('list')})});
+}
+
+function renderSim(){
+  var k=+$('#simRange').value,n=deciles.length;
+  $('#simRange').max=n;
+  var contacted=0,buyers=0,all=0,t=tot();
+  for(var i=0;i<n;i++){var b=dcounts[i]*deciles[i]/100;if(i<k){contacted+=dcounts[i];buyers+=b}all+=b}
+  var prec=contacted?buyers/contacted*100:0,base=t?all/t*100:0,cap=all?buyers/all*100:0,share=t?contacted/t*100:0;
+  $('#simVal').textContent=k+(k===1?' decile':' deciles');
+  $('#simText').innerHTML='Contacting the top '+(k===1?'decile':k+' deciles')+' reaches <b>'+fmtInt(contacted)+' households</b>. About <b>'+fmtInt(buyers)+'</b> of them are expected to buy bananas, a hit rate of <b>'+prec.toFixed(1)+'%</b> against '+base.toFixed(1)+'% for the whole list.';
+  $('#simMeter').innerHTML=
+    '<div><span>Households contacted</span><span class="track"><i class="alt" style="width:'+share+'%"></i></span><span>'+share.toFixed(0)+'%</span></div>'+
+    '<div><span>Expected buyers reached</span><span class="track"><i style="width:'+cap+'%"></i></span><span>'+cap.toFixed(0)+'%</span></div>';
+}
+
+function setStatus(){
+  var s=$('#status');
+  if(rows){s.innerHTML='Household data loaded: <b>'+fmtInt(rows.length)+'</b> households from your file.'}
+  else{s.innerHTML='Showing the summary built into this page. <b>Load dashboard_list.csv</b> to look up households and browse the full list.'}
+}
+
+function normId(v){
+  v=String(v||'').trim().toUpperCase();
+  if(/^\d{1,4}$/.test(v))return 'HH-'+('0000'+v).slice(-4);
+  return v;
+}
+
+function renderLookup(id,anim){
+  var out=$('#lookupOut'),r=index.get(id);
+  current=r?id:null;
+  if(!r){out.innerHTML='<p class="idle">No household with the ID '+esc(id)+' is on the list. Households that made no purchase in the last 28 days of the data are not scored. Check the ID, or open the priority list and copy one from there.</p>';return}
+  var b=r.band+1,pct=(r.rank-0.5)/rows.length*100,n=deciles.length,segs='';
+  for(var i=0;i<n;i++)segs+='<i class="bg'+(bandOf(i+1)+1)+'"></i>';
+  var days=r.days==null?'No banana history':fmtInt(r.days)+(r.days===1?' day':' days');
+  out.innerHTML=
+    '<div class="result"><div class="res-head"><h3>'+esc(r.id)+'</h3><span class="chip b'+b+'">'+BANDS[r.band]+' priority</span></div>'+
+    '<div class="res-grid"><div>'+
+    '<p class="big" id="bigHit">'+(anim?'0.0%':r.hit.toFixed(1)+'%')+'</p>'+
+    '<p class="big-cap">of households in decile '+r.decile+' bought bananas within 28 days in the validation backtest. This is the rate for the group, not a personal probability.</p>'+
+    '<div class="strip">'+segs+'<span class="marker" id="marker" style="left:'+(anim?0:pct)+'%"></span></div>'+
+    '<p class="strip-cap">Rank '+fmtInt(r.rank)+' of '+fmtInt(rows.length)+', decile '+r.decile+'. The marker shows where this household sits on the list.</p></div>'+
+    '<dl class="facts">'+
+    '<div><dt>Priority rank</dt><dd>'+fmtInt(r.rank)+'</dd></div>'+
+    '<div><dt>Decile</dt><dd>'+r.decile+' of '+n+'</dd></div>'+
+    '<div><dt>Since last banana purchase</dt><dd>'+days+'</dd></div>'+
+    '<div><dt>Days with a banana purchase</dt><dd>'+(r.hist==null?'Not in file':fmtInt(r.hist))+'</dd></div>'+
+    '<div><dt>Bought in the last 28 days</dt><dd>'+(r.prev==null?'Not in file':(r.prev?'Yes':'No'))+'</dd></div>'+
+    '<div><dt>Hit rate of this decile</dt><dd>'+r.hit.toFixed(1)+'%</dd></div></dl></div>'+
+    '<div class="chart-box"><figcaption>Where decile '+r.decile+' sits among all deciles</figcaption><div id="lookupChart"></div></div></div>';
+  decileChart($('#lookupChart'),{compact:true,highlight:r.decile,animate:anim});
+  if(anim){
+    countUp($('#bigHit'),r.hit,function(v){return v.toFixed(1)+'%'},800);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){var m=$('#marker');if(m)m.style.left=pct+'%'})});
+  }
+}
+
+function openHousehold(id){
+  show('lookup');
+  $('#lookupInput').value=id;
+  renderLookup(id,true);
+}
+
+function renderLookupIdle(){
+  if(!rows)return;
+  var h='Try one of the highest ranked: ';
+  byRank.slice(0,5).forEach(function(r){h+='<button type="button" data-id="'+esc(r.id)+'">'+esc(r.id)+'</button>'});
+  $('#suggest').innerHTML=h;
+  $$('#suggest button').forEach(function(b){b.addEventListener('click',function(){var id=b.getAttribute('data-id');$('#lookupInput').value=id;renderLookup(id,true)})});
+  if(!current&&!$('#lookupOut').innerHTML)$('#lookupOut').innerHTML='<p class="idle">Enter an ID to see its priority band, rank and the group hit rate behind it.</p>';
+}
+
+function applyFilter(){
+  var a=rows||[];
+  if(F.band!==null)a=a.filter(function(r){return r.band===F.band});
+  if(F.decile)a=a.filter(function(r){return r.decile===F.decile});
+  if(F.q){var q=F.q.toLowerCase();a=a.filter(function(r){return r.id.toLowerCase().indexOf(q)>=0})}
+  var key=F.sort,dir=F.dir;
+  function get(r){
+    switch(key){case 'id':return r.id;case 'band':return r.band;case 'decile':return r.decile;case 'hit':return r.hit;case 'days':return r.days;case 'hist':return r.hist;case 'prev':return r.prev==null?null:(r.prev?1:0);default:return r.rank}
+  }
+  a=a.slice().sort(function(x,y){
+    var p=get(x),q2=get(y);
+    if(p==null&&q2==null)return 0;
+    if(p==null)return 1;
+    if(q2==null)return -1;
+    if(p<q2)return -dir;
+    if(p>q2)return dir;
+    return x.rank-y.rank;
+  });
+  return a;
+}
+
+function renderList(){
+  if(!rows)return;
+  var bc=[0,0,0,0];rows.forEach(function(r){bc[r.band]++});
+  var chips='<button type="button" data-b="" aria-pressed="'+(F.band===null)+'">All '+fmtInt(rows.length)+'</button>';
+  BANDS.forEach(function(n,i){chips+='<button type="button" data-b="'+i+'" aria-pressed="'+(F.band===i)+'">'+n+' '+fmtInt(bc[i])+'</button>'});
+  var cb=$('#bandChips');cb.innerHTML=chips;
+  $$('button',cb).forEach(function(b){b.addEventListener('click',function(){var v=b.getAttribute('data-b');F.band=v===''?null:+v;F.page=0;renderList()})});
+  var sel=$('#decileSel'),o='<option value="">All deciles</option>';
+  for(var i=1;i<=deciles.length;i++)o+='<option value="'+i+'"'+(F.decile===i?' selected':'')+'>Decile '+i+'</option>';
+  sel.innerHTML=o;
+  $('#listSearch').value=F.q;
+  var a=applyFilter(),pages=Math.max(1,Math.ceil(a.length/PAGE));
+  F.page=Math.min(F.page,pages-1);
+  var s=a.slice(F.page*PAGE,(F.page+1)*PAGE),h='';
+  s.forEach(function(r){
+    h+='<tr tabindex="0" data-id="'+esc(r.id)+'"><td>'+fmtInt(r.rank)+'</td><td><b>'+esc(r.id)+'</b></td><td><span class="chip b'+(r.band+1)+'">'+BANDS[r.band]+'</span></td><td>'+r.decile+'</td>'+
+      '<td><span class="hit"><span class="hitbar"><i style="width:'+Math.min(100,r.hit)+'%"></i></span>'+r.hit.toFixed(1)+'%</span></td>'+
+      '<td>'+(r.days==null?'None':fmtInt(r.days))+'</td><td>'+(r.hist==null?'Not in file':fmtInt(r.hist))+'</td><td>'+(r.prev==null?'Not in file':(r.prev?'Yes':'No'))+'</td></tr>';
+  });
+  if(!s.length)h='<tr><td colspan="8" style="padding:28px 0;color:var(--muted)">No households match these filters. Clear a filter to see more.</td></tr>';
+  $('#tbl tbody').innerHTML=h;
+  $$('#tbl tbody tr[data-id]').forEach(function(tr){
+    tr.addEventListener('click',function(){openHousehold(tr.getAttribute('data-id'))});
+    tr.addEventListener('keydown',function(e){if(e.key==='Enter'){openHousehold(tr.getAttribute('data-id'))}});
+  });
+  $$('#tbl th').forEach(function(th){
+    var on=th.getAttribute('data-sort')===F.sort;
+    if(on)th.setAttribute('aria-sort',F.dir===1?'ascending':'descending');else th.removeAttribute('aria-sort');
+  });
+  var from=a.length?F.page*PAGE+1:0,to=Math.min(a.length,(F.page+1)*PAGE);
+  $('#listCount').textContent='Showing '+fmtInt(from)+' to '+fmtInt(to)+' of '+fmtInt(a.length)+' households';
+  $('#pageInfo').textContent='Page '+(F.page+1)+' of '+pages;
+  $('#prevBtn').disabled=F.page===0;
+  $('#nextBtn').disabled=F.page>=pages-1;
+}
+
+function renderModel(anim){
+  compareChart($('#cmpChart'),anim);
+  coefChart($('#coefChart'),anim);
+  var h='<thead><tr><th>PR-AUC by fold</th><th>Fold 1</th><th>Fold 2</th><th>Fold 3</th></tr></thead><tbody>';
+  E.folds.forEach(function(f){h+='<tr><td>'+esc(f[0])+'</td>'+f[1].map(function(v){return '<td>'+v.toFixed(3)+'</td>'}).join('')+'</tr>'});
+  $('#foldTable').innerHTML=h+'</tbody>';
+  var t='';
+  E.topk.forEach(function(k){t+='<div><b>'+k.p.toFixed(1)+'%</b><span>hit rate when contacting the top '+k.k+'% of the list, '+k.l.toFixed(2)+'× the average, mean of three folds</span></div>'});
+  $('#topk').innerHTML=t;
+}
+
+function show(v){
+  view=v;
+  $$('.view').forEach(function(s){s.classList.toggle('active',s.id==='view-'+v)});
+  $$('.tabs button').forEach(function(b){b.setAttribute('aria-selected',b.getAttribute('data-view')===v?'true':'false')});
+  var anim=!seen[v]&&!REDUCED;seen[v]=1;
+  if(v==='overview')renderOverview(anim);
+  else if(v==='lookup')renderLookupIdle();
+  else if(v==='list')renderList();
+  else renderModel(anim);
+  hideTip();
+  window.scrollTo(0,0);
+  try{history.replaceState(null,'','#'+v)}catch(e){}
+}
+
+function parseCSV(text){
+  var out=[],row=[],f='',q=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;
+    else if(c===','){row.push(f);f=''}
+    else if(c==='\n'){row.push(f);out.push(row);row=[];f=''}
+    else if(c!=='\r')f+=c;
+  }
+  if(f.length||row.length){row.push(f);out.push(row)}
+  return out;
+}
+
+function ingest(text){
+  var t=parseCSV(text).filter(function(r){return r.length>1||(r[0]&&r[0].trim())});
+  if(t.length<2)throw new Error('The file has no data rows.');
+  var head=t[0].map(function(h){return h.replace(/^﻿/,'').trim()});
+  function col(n){return head.indexOf(n)}
+  var need=['display_id','rank','decile','priority_band','historical_hit_rate_pct'],miss=need.filter(function(n){return col(n)<0});
+  if(miss.length)throw new Error('Missing columns: '+miss.join(', ')+'. Use the dashboard_list.csv file.');
+  var ci={id:col('display_id'),rank:col('rank'),dec:col('decile'),band:col('priority_band'),hit:col('historical_hit_rate_pct'),days:col('days_since_last_banana'),hist:col('banana_days_before'),prev:col('bought_prev_28d')};
+  var out=[];
+  for(var i=1;i<t.length;i++){
+    var r=t[i],id=(r[ci.id]||'').trim();
+    if(!id)continue;
+    var dec=parseInt(r[ci.dec],10),hit=parseFloat(r[ci.hit]),rank=parseInt(r[ci.rank],10);
+    if(!isFinite(dec)||!isFinite(hit)||!isFinite(rank))continue;
+    var bn=(r[ci.band]||'').trim().toLowerCase(),b=-1;
+    for(var j=0;j<4;j++)if(BANDS[j].toLowerCase()===bn)b=j;
+    if(b<0)b=bandOf(dec);
+    var dv=ci.days>=0?parseFloat(r[ci.days]):NaN,hv=ci.hist>=0?parseFloat(r[ci.hist]):NaN,pv=null;
+    if(ci.prev>=0){var ps=(r[ci.prev]||'').trim().toLowerCase();pv=ps==='1'||ps==='true'||ps==='1.0'}
+    out.push({id:id,rank:rank,decile:dec,band:b,hit:hit,days:isFinite(dv)?dv:null,hist:isFinite(hv)?hv:null,prev:pv});
+  }
+  if(!out.length)throw new Error('No valid rows were found in the file.');
+  rows=out;
+  byRank=out.slice().sort(function(a,b){return a.rank-b.rank});
+  index=new Map();out.forEach(function(r){index.set(r.id,r)});
+  var maxD=0;out.forEach(function(r){if(r.decile>maxD)maxD=r.decile});
+  var dc=[],sm=[];for(var k=0;k<maxD;k++){dc.push(0);sm.push(0)}
+  out.forEach(function(r){dc[r.decile-1]++;sm[r.decile-1]+=r.hit});
+  dcounts=dc;deciles=sm.map(function(s,k){return dc[k]?s/dc[k]:0});
+  var dl=$('#idlist'),opts='';
+  byRank.forEach(function(r){opts+='<option value="'+esc(r.id)+'">'});
+  dl.innerHTML=opts;
+  document.body.classList.add('has-data');
+  current=null;$('#lookupOut').innerHTML='';
+  F.band=null;F.decile=null;F.q='';F.page=0;F.sort='rank';F.dir=1;
+  seen={};seen[view]=1;
+  var keep=view;
+  if(keep==='overview')renderOverview(true);
+  else if(keep==='lookup')renderLookupIdle();
+  else if(keep==='list')renderList();
+  else renderModel(false);
+  toast('Loaded '+fmtInt(out.length)+' households');
+}
+
+function loadFile(file){
+  if(!file)return;
+  var rd=new FileReader();
+  rd.onload=function(){try{ingest(String(rd.result))}catch(err){toast(err.message)}};
+  rd.onerror=function(){toast('The file could not be read.')};
+  rd.readAsText(file);
+}
+
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  $('#themeBtn').textContent=t==='dark'?'Light theme':'Dark theme';
+  try{localStorage.setItem('theme',t)}catch(e){}
+}
+
+function exportCSV(){
+  var a=applyFilter(),cols=['display_id','rank','decile','priority_band','historical_hit_rate_pct','days_since_last_banana','banana_days_before','bought_prev_28d'],lines=[cols.join(',')];
+  a.forEach(function(r){lines.push([r.id,r.rank,r.decile,BANDS[r.band],r.hit,r.days==null?'':r.days,r.hist==null?'':r.hist,r.prev==null?'':(r.prev?1:0)].join(','))});
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'}),u=URL.createObjectURL(blob),a2=document.createElement('a');
+  a2.href=u;a2.download='priority_list_filtered.csv';document.body.appendChild(a2);a2.click();a2.remove();
+  setTimeout(function(){URL.revokeObjectURL(u)},500);
+}
+
+$$('.tabs button').forEach(function(b){b.addEventListener('click',function(){show(b.getAttribute('data-view'))})});
+$('#loadBtn').addEventListener('click',function(){$('#file').click()});
+$$('[data-load]').forEach(function(b){b.addEventListener('click',function(){$('#file').click()})});
+$('#file').addEventListener('change',function(e){loadFile(e.target.files[0]);e.target.value=''});
+$('#themeBtn').addEventListener('click',function(){setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')});
+$('#simRange').addEventListener('input',renderSim);
+$('#lookupForm').addEventListener('submit',function(e){e.preventDefault();var id=normId($('#lookupInput').value);if(!id)return;$('#lookupInput').value=id;renderLookup(id,true)});
+$('#randomBtn').addEventListener('click',function(){if(!rows)return;var r=rows[Math.floor(Math.random()*rows.length)];$('#lookupInput').value=r.id;renderLookup(r.id,true)});
+$('#listSearch').addEventListener('input',function(e){F.q=e.target.value.trim();F.page=0;renderList();var el=$('#listSearch');el.focus();el.setSelectionRange(el.value.length,el.value.length)});
+$('#decileSel').addEventListener('change',function(e){F.decile=e.target.value?+e.target.value:null;F.page=0;renderList()});
+$('#exportBtn').addEventListener('click',exportCSV);
+$('#prevBtn').addEventListener('click',function(){F.page=Math.max(0,F.page-1);renderList()});
+$('#nextBtn').addEventListener('click',function(){F.page++;renderList()});
+$$('#tbl th').forEach(function(th){th.querySelector('button').addEventListener('click',function(){
+  var k=th.getAttribute('data-sort');
+  if(F.sort===k)F.dir=-F.dir;else{F.sort=k;F.dir=k==='hit'||k==='hist'?-1:1}
+  F.page=0;renderList();
+})});
+
+var dragDepth=0;
+window.addEventListener('dragenter',function(e){e.preventDefault();dragDepth++;$('#drop').classList.add('on')});
+window.addEventListener('dragover',function(e){e.preventDefault()});
+window.addEventListener('dragleave',function(){dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$('#drop').classList.remove('on')});
+window.addEventListener('drop',function(e){e.preventDefault();dragDepth=0;$('#drop').classList.remove('on');if(e.dataTransfer&&e.dataTransfer.files.length)loadFile(e.dataTransfer.files[0])});
+
+var saved=null;
+try{saved=localStorage.getItem('theme')}catch(e){}
+if(!saved)saved=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+setTheme(saved);
+
+var start=(location.hash||'').replace('#','');
+if(['overview','lookup','list','model'].indexOf(start)<0)start='overview';
+show(start);
+
+if(location.protocol!=='file:')try{
+  fetch('dashboard_list.csv').then(function(r){return r.ok?r.text():Promise.reject()}).then(function(t){ingest(t)}).catch(function(){});
+}catch(e){}
+})();
+</script>
+</body>
+</html>
