@@ -1,0 +1,39 @@
+# Large raw data files (>100MB / non-repo data)
+causal_data.csv
+transaction_data.csv
+product.csv
+coupon.csv
+coupon_redempt.csv
+campaign_table.csv
+campaign_desc.csv
+hh_demographic.csv
+
+# Embedded databases & temp files
+*.duckdb
+*.duckdb.wal
+*.db
+*.sqlite
+*.sqlite3
+
+# Large intermediate tables
+model_table.parquet
+
+# PII & Private security mappings
+*PRIVATE*
+household_id_mapping_PRIVATE.csv
+
+# Python environment & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+*.venv/
+env/
+venv/
+ENV/
+
+# OS and Editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
